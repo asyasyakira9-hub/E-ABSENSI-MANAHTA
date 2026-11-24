@@ -1,0 +1,96 @@
+{
+  "school": {
+    "name": "MA Nahdhiyah Talun",
+    "shortCode": "MNT",
+    "npsn": "20364812",
+    "address": "Jl. Raya Talun No. 45, Kec. Talun, Kab. Pekalongan, Jawa Tengah",
+    "headmaster": "H. Ahmad Fauzi, M.Pd.I",
+    "jamMasuk": "07:00",
+    "toleransiMenit": 15,
+    "jamPulang": "14:30",
+    "kioskPin": "123456"
+  },
+  "kelasList": [
+    {
+      "id": "K1",
+      "nama": "X IPA 1",
+      "waliKelasId": "PEG-005",
+      "waliKelasNama": "Ust. M. Ridwan, S.Pd.I",
+      "waWaliKelas": "6281228001105"
+    },
+    {
+      "id": "K2",
+      "nama": "XI IPS 1",
+      "waliKelasId": "PEG-006",
+      "waliKelasNama": "Ustzh. Nurul Hidayah, S.Ag",
+      "waWaliKelas": "6281228001106"
+    },
+    {
+      "id": "K3",
+      "nama": "XII IPA 1",
+      "waliKelasId": "PEG-003",
+      "waliKelasNama": "Ustzh. Siti Aminah, S.Pd",
+      "waWaliKelas": "6281228001103"
+    }
+  ],
+  "siswa": [
+    {
+      "nisn": "0074519821",
+      "nama": "Ahmad Zaki Al-Fatih",
+      "kelas": "XII IPA 1",
+      "wali": "Bpk. H. Sulaiman",
+      "waWali": "6281234567801"
+    },
+    {
+      "nisn": "0074519822",
+      "nama": "Aisyah Putri Ramadhani",
+      "kelas": "XII IPA 1",
+      "wali": "Ibu Hj. Fatimah",
+      "waWali": "6281234567802"
+    },
+    {
+      "nisn": "0081122334",
+      "nama": "Muhammad Ilham Maulana",
+      "kelas": "XI IPS 1",
+      "wali": "Bpk. Budi Santoso",
+      "waWali": "6281234567803"
+    },
+    {
+      "nisn": "0095566778",
+      "nama": "Zahra Nabila Khairunnisa",
+      "kelas": "X IPA 1",
+      "wali": "Bpk. Hendra Wijaya",
+      "waWali": "6281234567804"
+    }
+  ],
+  "pegawai": [
+    {
+      "pegId": "PEG-001",
+      "nama": "M. Khoirul Anam, S.Kom",
+      "jabatan": "Admin / Operator TU",
+      "unit": "Tata Usaha",
+      "wa": "6281228001101"
+    },
+    {
+      "pegId": "PEG-002",
+      "nama": "Ust. Syamsul Maarif, S.Pd",
+      "jabatan": "Guru Fiqih / Piket",
+      "unit": "Pendidik",
+      "wa": "6281228001102"
+    },
+    {
+      "pegId": "PEG-003",
+      "nama": "Ustzh. Siti Aminah, S.Pd",
+      "jabatan": "Guru Kimia & Wali Kelas XII IPA 1",
+      "unit": "Pendidik",
+      "wa": "6281228001103"
+    },
+    {
+      "pegId": "PEG-004",
+      "nama": "Drs. Abdul Rouf",
+      "jabatan": "Guru Bahasa Arab",
+      "unit": "Pendidik",
+      "wa": "6281228001104"
+    }
+  ]
+}
