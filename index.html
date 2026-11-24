@@ -4,11 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
   <meta name="theme-color" content="#065f46" />
-  <meta name="description" content="Sistem Absensi Digital Siswa, Guru, dan Tenaga Kependidikan MA Nahdhiyah Talun lengkap dengan pemindai barcode NISN/PegID, notifikasi WhatsApp, dan portal wali murid." />
-  <meta name="application-name" content="E-Absensi MA Nahdhiyah Talun" />
-  <meta name="apple-mobile-web-app-capable" content="yes" />
-  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-  <meta name="apple-mobile-web-app-title" content="Absensi MNT" />
+  <meta name="description" content="Sistem Absensi Digital Siswa, Guru, dan Tenaga Kependidikan MA Nahdhiyah Talun." />
   <link rel="manifest" href="./manifest.webmanifest" />
   <link rel="icon" type="image/png" sizes="192x192" href="./icons/icon-192.png" />
   <link rel="apple-touch-icon" href="./icons/icon-192.png" />
@@ -18,50 +14,20 @@
   <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js" defer></script>
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <style>
-    body { font-family: 'Plus Jakarta Sans', sans-serif; background-color: #f8fafc; margin: 0; -webkit-tap-highlight-color: transparent; }
+    body { font-family: 'Plus Jakarta Sans', sans-serif; background-color: #f8fafc; margin: 0; }
     #qr-reader video { border-radius: 1rem; object-fit: cover; }
     @media print { .no-print { display: none !important; } body { background: white !important; } }
   </style>
 </head>
-<body class="text-slate-800 antialiased selection:bg-emerald-100 selection:text-emerald-900">
-
-<div id="app">
-  <div style="min-height:100vh;display:flex;align-items:center;justify-content:center;padding:16px;background:linear-gradient(135deg,#064e3b,#065f46,#0f766e);color:#fff;font-family:sans-serif;text-align:center;">
-    <div style="background:#fff;color:#1e293b;padding:24px;border-radius:20px;max-width:360px;width:100%;box-shadow:0 20px 40px rgba(0,0,0,0.2);">
-      <div style="font-weight:800;font-size:18px;color:#065f46;">E-Absensi MA Nahdhiyah Talun</div>
-      <p style="font-size:13px;color:#475569;margin-top:8px;">Memuat aplikasi...</p>
-    </div>
-  </div>
-</div>
-
+<body class="text-slate-800 antialiased">
+<div id="app"></div>
 <script>
-window.addEventListener('error', function(ev) {
-  var appEl = document.getElementById('app');
-  if (appEl && !window.__appRendered) {
-    appEl.innerHTML = '<div style="padding:20px;font-family:sans-serif;color:#991b1b;background:#fef2f2;border:1px solid #fecaca;border-radius:12px;margin:16px;"><b>Peringatan Skrip:</b> ' + (ev.message || 'Terjadi kesalahan saat memuat skrip.') + '</div>';
-  }
-});
-
 if ('serviceWorker' in navigator) {
-  window.addEventListener('load', function() {
-    navigator.serviceWorker.register('./sw.js').catch(function() {});
-  });
+  window.addEventListener('load', () => navigator.serviceWorker.register('./sw.js').catch(() => {}));
 }
-
-const STORAGE_KEY = 'e_absensi_mnt_v2_8_ghpages';
-
+const STORAGE_KEY = 'e_absensi_mnt_v2_9_ghpages';
 const defaultData = {
-  school: {
-    name: 'MA Nahdhiyah Talun',
-    shortCode: 'MNT',
-    npsn: '20364812',
-    address: 'Jl. Raya Talun No. 45, Kec. Talun, Kab. Pekalongan, Jawa Tengah',
-    headmaster: 'H. Ahmad Fauzi, M.Pd.I',
-    jamMasuk: '07:00',
-    toleransiMenit: 15,
-    jamPulang: '14:30',
-    kioskPin: '123456'
-  },
+  school: { name: 'MA Nahdhiyah Talun', shortCode: 'MNT', npsn: '20364812', jamMasuk: '07:00', toleransiMenit: 15, jamPulang: '14:30', kioskPin: '123456' },
   users: [
     { id: 'admin', pin: '1234', name: 'Operator Madrasah', role: 'admin', refId: 'PEG-001' },
     { id: 'piket', pin: '1234', name: 'Ust. Syamsul Maarif (Piket)', role: 'piket', refId: 'PEG-002' },
@@ -82,812 +48,63 @@ const defaultData = {
   ],
   pegawai: [
     { pegId: 'PEG-001', nama: 'M. Khoirul Anam, S.Kom', jabatan: 'Admin / Operator TU', unit: 'Tata Usaha', wa: '6281228001101' },
-    { pegId: 'PEG-002', nama: 'Ust. Syamsul Maarif, S.Pd', jabatan: 'Guru Fiqih / Piket', unit: 'Pendidik', wa: '6281228001102' },
-    { pegId: 'PEG-003', nama: 'Ustzh. Siti Aminah, S.Pd', jabatan: 'Guru Kimia & Wali Kelas XII IPA 1', unit: 'Pendidik', wa: '6281228001103' },
-    { pegId: 'PEG-004', nama: 'Drs. Abdul Rouf', jabatan: 'Guru Bahasa Arab', unit: 'Pendidik', wa: '6281228001104' }
+    { pegId: 'PEG-002', nama: 'Ust. Syamsul Maarif, S.Pd', jabatan: 'Guru Fiqih / Piket', unit: 'Pendidik', wa: '6281228001102' }
   ],
-  absensi: [],
-  izinRequests: [],
-  waLogs: [],
-  auditLogs: [],
+  absensi: [], izinRequests: [], waLogs: [],
   waConfig: {
-    sendMode: 'api_and_fallback',
-    provider: 'fonnte',
-    endpoint: 'https://api.fonnte.com/send',
-    apiKey: '',
-    senderPhone: '',
-    autoRealtime: true,
-    tplMasuk: 'Assalamualaikum Wr. Wb. Yth. *{nama_wali}*, ananda *{nama_siswa}* (NISN: {nisn}, Kelas {kelas}) telah melakukan *ABSEN MASUK* di {sekolah} pada tanggal {tanggal} pukul *{jam} WIB* dengan status: *{status}*. Terima kasih.',
-    tplPulang: 'Assalamualaikum Wr. Wb. Yth. *{nama_wali}*, ananda *{nama_siswa}* (Kelas {kelas}) telah melakukan *ABSEN PULANG* dari {sekolah} pukul *{jam} WIB*. Semoga selamat sampai di rumah.',
-    tplStatus: 'Assalamualaikum Wr. Wb. Yth. *{nama_wali}*, diinformasikan bahwa ananda *{nama_siswa}* (Kelas {kelas}) pada tanggal {tanggal} tercatat dengan status kehadiran: *{status}*.',
-    tplWaliKelas: 'Assalamualaikum Ust/Ustzh *{nama_walikelas}*, terdapat pengajuan *{jenis_izin}* dari Wali Murid ananda *{nama_siswa}* (Kelas {kelas}) untuk tanggal {tanggal}. Alasan: _{alasan}_. Silakan verifikasi melalui aplikasi E-Absensi.'
+    sendMode: 'direct_wa', endpoint: 'https://api.fonnte.com/send', apiKey: '', autoRealtime: true,
+    tplMasuk: 'Assalamualaikum Wr. Wb. Yth. *{nama_wali}*, ananda *{nama_siswa}* (Kelas {kelas}) telah melakukan *ABSEN MASUK* di {sekolah} tanggal {tanggal} pukul *{jam} WIB* ({status}).',
+    tplPulang: 'Assalamualaikum Wr. Wb. Yth. *{nama_wali}*, ananda *{nama_siswa}* (Kelas {kelas}) telah *ABSEN PULANG* dari {sekolah} pukul *{jam} WIB*.'
   }
 };
-
 function getTodayStr() { return new Date().toISOString().split('T')[0]; }
 function getTimeStr() { return new Date().toTimeString().slice(0, 5); }
-function normalizeWA(phone) {
-  let clean = String(phone || '').replace(/[^0-9]/g, '');
-  if (clean.startsWith('0')) clean = '62' + clean.slice(1);
-  if (!clean.startsWith('62') && clean.length > 5) clean = '62' + clean;
-  return clean;
-}
-
-function loadState() {
-  try {
-    const saved = localStorage.getItem(STORAGE_KEY);
-    if (saved) return JSON.parse(saved);
-  } catch (e) {}
-  const today = getTodayStr();
-  const init = JSON.parse(JSON.stringify(defaultData));
-  init.absensi = [
-    { id: 'ABS-101', tanggal: today, kode: '0074519821', nama: 'Ahmad Zaki Al-Fatih', tipe: 'Siswa', kelasUnit: 'XII IPA 1', jamMasuk: '06:52', jamPulang: '', status: 'Hadir' },
-    { id: 'ABS-102', tanggal: today, kode: '0074519822', nama: 'Aisyah Putri Ramadhani', tipe: 'Siswa', kelasUnit: 'XII IPA 1', jamMasuk: '07:21', jamPulang: '', status: 'Terlambat' }
-  ];
-  init.izinRequests = [
-    {
-      id: 'IZN-01', tanggal: today, nisn: '0081122334', namaSiswa: 'Muhammad Ilham Maulana', kelas: 'XI IPS 1',
-      wali: 'Bpk. Budi Santoso', waWali: '6281234567803', jenis: 'Sakit',
-      alasan: 'Demam tinggi sejak tadi malam, surat dokter terlampir.',
-      fileName: 'surat_dokter_ilham.jpg', fileSizeKB: 245, fileData: '', status: 'Menunggu'
-    }
-  ];
-  return init;
-}
-
-let db = loadState();
-function saveState() { try { localStorage.setItem(STORAGE_KEY, JSON.stringify(db)); } catch (e) {} }
-
-fetch('./data/master-data.json')
-  .then(r => r.ok ? r.json() : null)
-  .then(ext => {
-    if (ext && !localStorage.getItem(STORAGE_KEY)) {
-      if (ext.school) db.school = Object.assign({}, db.school, ext.school);
-      if (ext.kelasList) db.kelasList = ext.kelasList;
-      if (ext.siswa) db.siswa = ext.siswa;
-      if (ext.pegawai) db.pegawai = ext.pegawai;
-      saveState();
-      render();
-    }
-  })
-  .catch(() => {});
-
-let currentUser = null;
-let activeTab = 'dashboard';
-let kioskLocked = false;
-let isOnline = navigator.onLine;
-let deferredPrompt = null;
-let scanMode = 'masuk';
-let scanFeedback = null;
-let html5QrScanner = null;
-let isScanningCamera = false;
-let lastScannedCode = '';
-let lastScannedTime = 0;
-let filterTanggal = getTodayStr();
-let waTestState = { phone: '085711112201', message: 'Assalamualaikum Wr. Wb. Ini adalah pesan uji coba nyata dari Sistem Absensi MA Nahdhiyah Talun.', loading: false, lastResponse: '' };
-
-window.addEventListener('online', () => { isOnline = true; render(); });
-window.addEventListener('offline', () => { isOnline = false; render(); });
-window.addEventListener('beforeinstallprompt', (e) => { e.preventDefault(); deferredPrompt = e; render(); });
-
-function playBeep(success = true) {
-  try {
-    const ctx = new (window.AudioContext || window.webkitAudioContext)();
-    const osc = ctx.createOscillator();
-    const gain = ctx.createGain();
-    osc.type = success ? 'sine' : 'sawtooth';
-    osc.frequency.setValueAtTime(success ? 920 : 210, ctx.currentTime);
-    gain.gain.setValueAtTime(0.16, ctx.currentTime);
-    osc.connect(gain);
-    gain.connect(ctx.destination);
-    osc.start();
-    osc.stop(ctx.currentTime + (success ? 0.16 : 0.35));
-    if (navigator.vibrate) navigator.vibrate(success ? 80 : [120, 60, 120]);
-  } catch (e) {}
-}
-
-function formatTemplate(tpl, vars) {
-  let out = tpl;
-  Object.keys(vars).forEach(k => { out = out.replaceAll('{' + k + '}', vars[k] || '-'); });
-  return out;
-}
-
-function openDirectWhatsApp(phone, message) {
-  const norm = normalizeWA(phone);
-  window.open(`https://wa.me/${norm}?text=${encodeURIComponent(message)}`, '_blank');
-}
-
-async function sendRealWhatsApp(phone, recipientName, message) {
-  const norm = normalizeWA(phone);
-  const now = getTodayStr() + ' ' + getTimeStr();
-  const cfg = db.waConfig;
-  const logEntry = {
-    id: 'WA-' + Math.floor(1000 + Math.random() * 9000),
-    waktu: now, tujuan: norm, penerima: recipientName, pesan: message, status: 'Mengirim...', detail: ''
-  };
-  db.waLogs.unshift(logEntry);
-  saveState();
-
-  if (cfg.sendMode === 'direct_wa') {
-    logEntry.status = 'Dibuka di App WA';
-    logEntry.detail = 'Dialihkan ke aplikasi WhatsApp';
-    saveState();
-    openDirectWhatsApp(norm, message);
-    return { ok: true, detail: 'Membuka aplikasi WhatsApp...' };
+function normalizeWA(p) { let c = String(p||'').replace(/[^0-9]/g,''); if (c.startsWith('0')) c='62'+c.slice(1); return c; }
+let db = JSON.parse(localStorage.getItem(STORAGE_KEY) || 'null') || JSON.parse(JSON.stringify(defaultData));
+function saveState() { localStorage.setItem(STORAGE_KEY, JSON.stringify(db)); }
+fetch('./data/master-data.json').then(r => r.ok ? r.json() : null).then(ext => {
+  if (ext && !localStorage.getItem(STORAGE_KEY)) {
+    if (ext.school) db.school = Object.assign({}, db.school, ext.school);
+    if (ext.kelasList) db.kelasList = ext.kelasList;
+    if (ext.siswa) db.siswa = ext.siswa;
+    if (ext.pegawai) db.pegawai = ext.pegawai;
+    saveState(); render();
   }
+}).catch(() => {});
 
-  if (!isOnline) {
-    logEntry.status = 'Gagal (Offline)';
-    logEntry.detail = 'Perangkat sedang offline';
-    saveState();
-    return { ok: false, detail: 'Perangkat offline' };
-  }
-
-  const token = (cfg.apiKey || '').trim();
-  if (!token) {
-    logEntry.status = 'Gagal (Token Belum Diisi)';
-    logEntry.detail = 'Masukkan API Token asli atau gunakan Mode Buka Langsung App WA.';
-    if (cfg.sendMode === 'api_and_fallback') {
-      logEntry.status = 'Fallback ke App WA';
-      openDirectWhatsApp(norm, message);
-    }
-    saveState();
-    return { ok: false, detail: logEntry.detail };
-  }
-
-  try {
-    let response;
-    if (cfg.provider === 'fonnte') {
-      const formData = new FormData();
-      formData.append('target', norm);
-      formData.append('message', message);
-      formData.append('countryCode', '62');
-      response = await fetch(cfg.endpoint || 'https://api.fonnte.com/send', {
-        method: 'POST', headers: { 'Authorization': token }, body: formData
-      });
-    } else if (cfg.provider === 'wablas') {
-      response = await fetch(cfg.endpoint, {
-        method: 'POST',
-        headers: { 'Authorization': token, 'Content-Type': 'application/json' },
-        body: JSON.stringify({ phone: norm, message })
-      });
-    } else {
-      response = await fetch(cfg.endpoint, {
-        method: 'POST',
-        headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
-        body: JSON.stringify({ to: norm, target: norm, sender: normalizeWA(cfg.senderPhone), message, text: message })
-      });
-    }
-    const rawText = await response.text();
-    let parsed = {};
-    try { parsed = JSON.parse(rawText); } catch (e) {}
-    if (response.ok && parsed.status !== false) {
-      logEntry.status = 'Terkirim (API)';
-      logEntry.detail = parsed.detail || parsed.message || 'Berhasil dikirim oleh gateway';
-      saveState();
-      return { ok: true, detail: logEntry.detail };
-    }
-    throw new Error(parsed.reason || parsed.message || `HTTP ${response.status}`);
-  } catch (err) {
-    logEntry.status = 'Gagal API';
-    logEntry.detail = err.message || 'Gagal terhubung ke API';
-    if (cfg.sendMode === 'api_and_fallback') {
-      logEntry.status = 'Fallback App WA';
-      openDirectWhatsApp(norm, message);
-    }
-    saveState();
-    return { ok: false, detail: logEntry.detail };
-  }
-}
-
-async function runWaTest() {
-  waTestState.phone = document.getElementById('test-wa-phone').value;
-  waTestState.message = document.getElementById('test-wa-msg').value;
-  waTestState.loading = true;
-  waTestState.lastResponse = 'Mengirim pesan uji coba...';
-  render();
-  const res = await sendRealWhatsApp(waTestState.phone, 'Nomor Uji Coba Admin', waTestState.message);
-  waTestState.loading = false;
-  waTestState.lastResponse = (res.ok ? '✅ SUKSES: ' : '⚠️ INFO: ') + res.detail;
-  render();
-}
-
-async function startRealBarcodeScanner() {
-  if (isScanningCamera) return;
-  if (typeof Html5Qrcode === 'undefined') {
-    alert('Library pemindai barcode belum siap. Gunakan kolom input NISN/PegID atau Scan dari Foto.');
-    return;
-  }
-  const readerEl = document.getElementById('qr-reader');
-  if (!readerEl) return;
-
-  try {
-    html5QrScanner = new Html5Qrcode('qr-reader');
-    const formatsToSupport = [
-      Html5QrcodeSupportedFormats.CODE_128,
-      Html5QrcodeSupportedFormats.CODE_39,
-      Html5QrcodeSupportedFormats.CODE_93,
-      Html5QrcodeSupportedFormats.EAN_13,
-      Html5QrcodeSupportedFormats.EAN_8,
-      Html5QrcodeSupportedFormats.UPC_A,
-      Html5QrcodeSupportedFormats.UPC_E,
-      Html5QrcodeSupportedFormats.QR_CODE,
-      Html5QrcodeSupportedFormats.DATA_MATRIX
-    ];
-
-    await html5QrScanner.start(
-      { facingMode: 'environment' },
-      {
-        fps: 12,
-        qrbox: function(viewfinderWidth, viewfinderHeight) {
-          const minEdge = Math.min(viewfinderWidth, viewfinderHeight);
-          const boxW = Math.min(Math.floor(viewfinderWidth * 0.85), 340);
-          const boxH = Math.min(Math.floor(minEdge * 0.45), 160);
-          return { width: boxW, height: boxH };
-        },
-        formatsToSupport
-      },
-      (decodedText) => {
-        const cleanCode = String(decodedText || '').trim();
-        const now = Date.now();
-        if (cleanCode && (cleanCode !== lastScannedCode || now - lastScannedTime > 2500)) {
-          lastScannedCode = cleanCode;
-          lastScannedTime = now;
-          processScan(cleanCode);
-        }
-      },
-      () => {}
-    );
-    isScanningCamera = true;
-    render();
-  } catch (err) {
-    isScanningCamera = false;
-    render();
-    alert('Gagal membuka kamera: ' + (err.message || err));
-  }
-}
-
-async function stopRealBarcodeScanner() {
-  if (html5QrScanner && isScanningCamera) {
-    try { await html5QrScanner.stop(); await html5QrScanner.clear(); } catch (e) {}
-  }
-  html5QrScanner = null;
-  isScanningCamera = false;
-  render();
-}
-
-async function scanBarcodeFromFile(event) {
-  const file = event.target.files && event.target.files[0];
-  if (!file || typeof Html5Qrcode === 'undefined') return;
-  try {
-    const tempScanner = new Html5Qrcode('qr-file-temp', false);
-    const result = await tempScanner.scanFile(file, true);
-    processScan(result);
-  } catch (err) {
-    playBeep(false);
-    scanFeedback = { ok: false, title: 'Barcode Tidak Terbaca', msg: 'Gambar tidak memuat barcode/QR yang jelas.' };
-    render();
-  }
-  event.target.value = '';
-}
-
-function processScan(rawCode, forceMode = null) {
-  const code = String(rawCode || '').trim();
-  if (!code) return;
-  const mode = forceMode || scanMode;
-  const today = getTodayStr();
-  const jam = getTimeStr();
-
-  const siswa = db.siswa.find(s => s.nisn === code || s.nama.toLowerCase() === code.toLowerCase());
-  const peg = db.pegawai.find(p => p.pegId.toLowerCase() === code.toLowerCase() || p.nama.toLowerCase() === code.toLowerCase());
-
-  if (!siswa && !peg) {
-    playBeep(false);
-    scanFeedback = { ok: false, title: 'Barcode / ID Tidak Terdaftar', msg: `Hasil scan "${code}" tidak cocok dengan NISN Siswa maupun PegID Guru/Tendik.` };
-    render();
-    return;
-  }
-
-  const targetCode = siswa ? siswa.nisn : peg.pegId;
-  const targetName = siswa ? siswa.nama : peg.nama;
-  const targetTipe = siswa ? 'Siswa' : 'Guru/Tendik';
-  const targetUnit = siswa ? siswa.kelas : peg.unit;
-  const existing = db.absensi.find(a => a.tanggal === today && a.kode === targetCode);
-
-  if (mode === 'masuk') {
-    if (existing && existing.jamMasuk) {
-      playBeep(false);
-      scanFeedback = { ok: false, title: 'Sudah Absen Masuk!', msg: `${targetName} sudah absen masuk hari ini pukul ${existing.jamMasuk} WIB.` };
-      render();
-      return;
-    }
-    const [hIn, mIn] = db.school.jamMasuk.split(':').map(Number);
-    const [hNow, mNow] = jam.split(':').map(Number);
-    const status = (hNow * 60 + mNow) > (hIn * 60 + mIn + Number(db.school.toleransiMenit || 0)) ? 'Terlambat' : 'Hadir';
-
-    if (existing) { existing.jamMasuk = jam; existing.status = status; }
-    else db.absensi.unshift({ id: 'ABS-' + Date.now(), tanggal: today, kode: targetCode, nama: targetName, tipe: targetTipe, kelasUnit: targetUnit, jamMasuk: jam, jamPulang: '', status });
-
-    let waMsg = '';
-    if (siswa) {
-      waMsg = formatTemplate(db.waConfig.tplMasuk, { nama_wali: siswa.wali, nama_siswa: siswa.nama, nisn: siswa.nisn, kelas: siswa.kelas, jam, status, tanggal: today, sekolah: db.school.name });
-      if (db.waConfig.autoRealtime) sendRealWhatsApp(siswa.waWali, `${siswa.wali} (Wali ${siswa.nama})`, waMsg);
-    }
-    playBeep(true);
-    scanFeedback = { ok: true, title: `Absen Masuk Berhasil (${status})`, msg: `${targetName} • Kode: ${targetCode} • Pukul ${jam} WIB`, waPhone: siswa ? siswa.waWali : '', waText: waMsg };
-  } else {
-    if (!existing || !existing.jamMasuk) {
-      playBeep(false);
-      scanFeedback = { ok: false, title: 'Belum Absen Masuk', msg: `${targetName} belum tercatat absen masuk hari ini.` };
-      render();
-      return;
-    }
-    if (existing.jamPulang) {
-      playBeep(false);
-      scanFeedback = { ok: false, title: 'Sudah Absen Pulang!', msg: `${targetName} sudah absen pulang pukul ${existing.jamPulang} WIB.` };
-      render();
-      return;
-    }
-    existing.jamPulang = jam;
-
-    let waMsg = '';
-    if (siswa) {
-      waMsg = formatTemplate(db.waConfig.tplPulang, { nama_wali: siswa.wali, nama_siswa: siswa.nama, nisn: siswa.nisn, kelas: siswa.kelas, jam, status: 'Pulang', tanggal: today, sekolah: db.school.name });
-      if (db.waConfig.autoRealtime) sendRealWhatsApp(siswa.waWali, `${siswa.wali} (Wali ${siswa.nama})`, waMsg);
-    }
-    playBeep(true);
-    scanFeedback = { ok: true, title: 'Absen Pulang Berhasil', msg: `${targetName} • Kode: ${targetCode} • Pulang ${jam} WIB`, waPhone: siswa ? siswa.waWali : '', waText: waMsg };
-  }
-
-  saveState();
-  render();
-}
-
-function loginAs(userId, pin) {
-  const u = db.users.find(x => x.id.toLowerCase() === String(userId).trim().toLowerCase() && x.pin === String(pin).trim());
-  if (!u) return alert('ID Pengguna atau PIN salah!');
-  currentUser = u;
-  activeTab = u.role === 'piket' ? 'scan' : (u.role === 'walimurid' ? 'portal_wali' : 'dashboard');
-  render();
-}
-function quickLogin(role) { const u = db.users.find(x => x.role === role); if (u) loginAs(u.id, u.pin); }
-function logout() { stopRealBarcodeScanner(); currentUser = null; render(); }
-
+let currentUser = null, activeTab = 'dashboard', kioskLocked = false, scanMode = 'masuk', scanFeedback = null;
+function loginAs(id, pin) { const u = db.users.find(x => x.id === id.trim().toLowerCase() && x.pin === pin.trim()); if (!u) return alert('ID atau PIN salah!'); currentUser = u; activeTab = u.role === 'piket' ? 'scan' : 'dashboard'; render(); }
+function logout() { currentUser = null; render(); }
 function toggleKioskLock() {
   if (!kioskLocked) { kioskLocked = true; activeTab = 'scan'; render(); }
-  else {
-    const p = prompt('Masukkan PIN Kunci Kios:');
-    if (p === db.school.kioskPin) { kioskLocked = false; render(); }
-    else if (p !== null) alert('PIN salah!');
-  }
+  else { const p = prompt('Masukkan PIN Kunci Kios:'); if (p === db.school.kioskPin) { kioskLocked = false; render(); } else if (p !== null) alert('PIN salah!'); }
 }
-
-async function installPWA() {
-  if (deferredPrompt) { deferredPrompt.prompt(); await deferredPrompt.userChoice; deferredPrompt = null; render(); }
-  else alert('Untuk menginstal ke layar utama:\n• Android Chrome: Ketuk ikon titik tiga (⋮) → "Instal aplikasi".\n• iPhone/iPad Safari: Ketuk Bagikan → "Tambah ke Layar Utama".');
-}
-
-function setManualStatus(kode, tipe, nama, kelasUnit, statusBaru) {
-  const today = getTodayStr(); const jam = getTimeStr();
-  let rec = db.absensi.find(a => a.tanggal === today && a.kode === kode);
-  if (rec) { rec.status = statusBaru; if (!rec.jamMasuk && (statusBaru === 'Hadir' || statusBaru === 'Terlambat')) rec.jamMasuk = jam; }
-  else db.absensi.unshift({ id: 'ABS-' + Date.now(), tanggal: today, kode, nama, tipe, kelasUnit, jamMasuk: (statusBaru === 'Hadir' || statusBaru === 'Terlambat') ? jam : '-', jamPulang: '', status: statusBaru });
-
-  if (tipe === 'Siswa' && ['Sakit', 'Izin', 'Alpha'].includes(statusBaru)) {
-    const s = db.siswa.find(x => x.nisn === kode);
-    if (s) {
-      const msg = formatTemplate(db.waConfig.tplStatus, { nama_wali: s.wali, nama_siswa: s.nama, nisn: s.nisn, kelas: s.kelas, jam, status: statusBaru.toUpperCase(), tanggal: today, sekolah: db.school.name });
-      sendRealWhatsApp(s.waWali, `${s.wali} (Wali ${s.nama})`, msg);
-    }
+function processScan(raw) {
+  const code = String(raw||'').trim(); if (!code) return;
+  const s = db.siswa.find(x => x.nisn === code);
+  const p = db.pegawai.find(x => x.pegId.toLowerCase() === code.toLowerCase());
+  if (!s && !p) { scanFeedback = { ok: false, title: 'Tidak Terdaftar', msg: code + ' tidak ditemukan.' }; render(); return; }
+  const today = getTodayStr(), jam = getTimeStr(), kode = s ? s.nisn : p.pegId, nama = s ? s.nama : p.nama, tipe = s ? 'Siswa' : 'Guru/Tendik', unit = s ? s.kelas : p.unit;
+  let ex = db.absensi.find(a => a.tanggal === today && a.kode === kode);
+  if (scanMode === 'masuk') {
+    if (ex && ex.jamMasuk) { scanFeedback = { ok: false, title: 'Sudah Absen Masuk', msg: nama + ' pukul ' + ex.jamMasuk }; render(); return; }
+    if (ex) ex.jamMasuk = jam; else db.absensi.unshift({ id: 'ABS-'+Date.now(), tanggal: today, kode, nama, tipe, kelasUnit: unit, jamMasuk: jam, jamPulang: '', status: 'Hadir' });
+    scanFeedback = { ok: true, title: 'Absen Masuk Berhasil', msg: nama + ' (' + jam + ' WIB)' };
+  } else {
+    if (!ex || !ex.jamMasuk) { scanFeedback = { ok: false, title: 'Belum Absen Masuk', msg: nama }; render(); return; }
+    ex.jamPulang = jam;
+    scanFeedback = { ok: true, title: 'Absen Pulang Berhasil', msg: nama + ' (' + jam + ' WIB)' };
   }
   saveState(); render();
 }
-
-function submitIzinWaliMurid(e) {
-  e.preventDefault();
-  const nisn = document.getElementById('wm-nisn').value;
-  const tanggal = document.getElementById('wm-tanggal').value;
-  const jenis = document.getElementById('wm-jenis').value;
-  const alasan = document.getElementById('wm-alasan').value.trim();
-  const fileInput = document.getElementById('wm-file');
-  const s = db.siswa.find(x => x.nisn === nisn);
-  if (!s) return;
-
-  const saveReq = (fileName, fileSizeKB, fileData) => {
-    db.izinRequests.unshift({ id: 'IZN-' + Math.floor(100 + Math.random() * 900), tanggal, nisn: s.nisn, namaSiswa: s.nama, kelas: s.kelas, wali: s.wali, waWali: s.waWali, jenis, alasan, fileName, fileSizeKB, fileData, status: 'Menunggu' });
-    const kls = db.kelasList.find(k => k.nama === s.kelas);
-    if (kls) {
-      const msgWK = formatTemplate(db.waConfig.tplWaliKelas, { nama_walikelas: kls.waliKelasNama, jenis_izin: jenis.toUpperCase(), nama_siswa: s.nama, kelas: s.kelas, tanggal, alasan });
-      sendRealWhatsApp(kls.waWaliKelas, `${kls.waliKelasNama} (Wali Kelas ${s.kelas})`, msgWK);
-    }
-    saveState(); alert('Pengajuan terkirim & notifikasi WA dikirim ke Wali Kelas!'); render();
-  };
-
-  if (fileInput.files && fileInput.files[0]) {
-    const file = fileInput.files[0];
-    if (file.size > 1048576) return alert('Ukuran file maksimal 1 MB!');
-    const reader = new FileReader();
-    reader.onload = () => saveReq(file.name, Math.round(file.size / 1024), reader.result);
-    reader.readAsDataURL(file);
-  } else saveReq('Tanpa Lampiran', 0, '');
-}
-
-function handleVerifikasiIzin(id, disetujui) {
-  const req = db.izinRequests.find(r => r.id === id);
-  if (!req) return;
-  req.status = disetujui ? 'Disetujui' : 'Ditolak';
-  if (disetujui) setManualStatus(req.nisn, 'Siswa', req.namaSiswa, req.kelas, req.jenis);
-  sendRealWhatsApp(req.waWali, `${req.wali} (Wali ${req.namaSiswa})`, `Assalamualaikum Wr. Wb. Yth. *${req.wali}*, pengajuan *${req.jenis}* untuk ananda *${req.namaSiswa}* (${req.kelas}) tanggal ${req.tanggal} telah *${req.status.toUpperCase()}*.`);
-  saveState(); render();
-}
-
-function exportCSV() {
-  const rows = [['Tanggal', 'Kode_ID', 'Nama', 'Kategori', 'Kelas_Unit', 'Jam_Masuk', 'Jam_Pulang', 'Status']];
-  db.absensi.forEach(a => rows.push([a.tanggal, a.kode, `"${a.nama}"`, a.tipe, `"${a.kelasUnit}"`, a.jamMasuk || '-', a.jamPulang || '-', a.status]));
-  const blob = new Blob([rows.map(r => r.join(',')).join('\n')], { type: 'text/csv;charset=utf-8;' });
-  const link = document.createElement('a'); link.href = URL.createObjectURL(blob); link.download = `Rekap_Absensi_${db.school.shortCode}_${getTodayStr()}.csv`; link.click();
-}
-
-function backupJSON() {
-  const blob = new Blob([JSON.stringify(db, null, 2)], { type: 'application/json' });
-  const link = document.createElement('a'); link.href = URL.createObjectURL(blob); link.download = `Backup_${db.school.shortCode}_${getTodayStr()}.json`; link.click();
-}
-
-function restoreJSON(event) {
-  const file = event.target.files[0]; if (!file) return;
-  const reader = new FileReader();
-  reader.onload = () => { try { const p = JSON.parse(reader.result); if (p.school && p.siswa) { db = p; saveState(); alert('Dipulihkan!'); render(); } } catch (e) { alert('File tidak valid'); } };
-  reader.readAsText(file);
-}
-
-function renderLogin() {
-  return `
-  <div class="min-h-screen bg-gradient-to-br from-emerald-900 via-emerald-800 to-teal-900 flex items-center justify-center p-4">
-    <div class="bg-white w-full max-w-md rounded-3xl shadow-2xl overflow-hidden border border-emerald-100">
-      <div class="bg-emerald-800 text-white p-6 text-center">
-        <div class="w-16 h-16 mx-auto bg-white/15 rounded-2xl flex items-center justify-center text-2xl font-extrabold border border-white/25 mb-3">${db.school.shortCode}</div>
-        <h1 class="text-xl font-extrabold">${db.school.name}</h1>
-        <p class="text-xs text-emerald-200 mt-1">Real Barcode Scanner • Real WhatsApp • GitHub Pages</p>
-      </div>
-      <div class="p-6 space-y-4">
-        <input id="login-id" type="text" placeholder="ID Pengguna (admin / piket / walikelas / guru / walimurid)" class="w-full px-4 py-3 rounded-xl border border-slate-200 text-sm" />
-        <input id="login-pin" type="password" inputmode="numeric" placeholder="PIN (1234)" class="w-full px-4 py-3 rounded-xl border border-slate-200 text-sm tracking-widest" />
-        <button onclick="loginAs(document.getElementById('login-id').value, document.getElementById('login-pin').value)" class="w-full py-3.5 bg-emerald-700 hover:bg-emerald-800 text-white font-bold rounded-xl shadow-lg">Masuk ke Sistem</button>
-        <div class="pt-3 border-t border-slate-100 grid grid-cols-2 gap-2 text-xs">
-          <button onclick="quickLogin('admin')" class="p-2.5 rounded-xl bg-slate-100 font-semibold text-left">🛡️ Admin</button>
-          <button onclick="quickLogin('piket')" class="p-2.5 rounded-xl bg-slate-100 font-semibold text-left">📷 Piket / Scan</button>
-          <button onclick="quickLogin('walikelas')" class="p-2.5 rounded-xl bg-slate-100 font-semibold text-left">📋 Wali Kelas</button>
-          <button onclick="quickLogin('guru')" class="p-2.5 rounded-xl bg-slate-100 font-semibold text-left">👨‍🏫 Guru & Tendik</button>
-          <button onclick="quickLogin('walimurid')" class="col-span-2 p-2.5 rounded-xl bg-amber-50 text-amber-900 font-bold text-center border border-amber-200">👪 Portal Wali Murid</button>
-        </div>
-      </div>
-    </div>
-  </div>`;
-}
-
-function renderDashboard() {
-  const today = getTodayStr();
-  const todayAbs = db.absensi.filter(a => a.tanggal === today);
-  return `
-  <div class="space-y-5">
-    <div class="bg-gradient-to-r from-emerald-800 to-teal-700 rounded-2xl p-5 text-white shadow-lg flex flex-wrap items-center justify-between gap-3">
-      <div>
-        <span class="text-xs uppercase bg-white/15 px-2.5 py-1 rounded-full font-semibold">${today}</span>
-        <h2 class="text-xl font-extrabold mt-2">Halo, ${currentUser.name}</h2>
-        <p class="text-xs text-emerald-100 mt-0.5">Jam Masuk: ${db.school.jamMasuk} WIB • Pulang: ${db.school.jamPulang} WIB</p>
-      </div>
-      <button onclick="activeTab='scan'; render();" class="px-4 py-2.5 bg-white text-emerald-900 font-extrabold text-xs rounded-xl shadow">📷 Scan Barcode Sekarang</button>
-    </div>
-
-    <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
-      <div class="bg-white p-4 rounded-2xl border border-slate-200"><p class="text-xs text-slate-500 font-semibold">Siswa Hadir</p><p class="text-2xl font-extrabold text-emerald-700 mt-1">${todayAbs.filter(a => a.tipe === 'Siswa' && a.status === 'Hadir').length}</p></div>
-      <div class="bg-white p-4 rounded-2xl border border-slate-200"><p class="text-xs text-slate-500 font-semibold">Terlambat</p><p class="text-2xl font-extrabold text-amber-600 mt-1">${todayAbs.filter(a => a.tipe === 'Siswa' && a.status === 'Terlambat').length}</p></div>
-      <div class="bg-white p-4 rounded-2xl border border-slate-200"><p class="text-xs text-slate-500 font-semibold">Izin / Sakit</p><p class="text-2xl font-extrabold text-sky-600 mt-1">${todayAbs.filter(a => a.tipe === 'Siswa' && (a.status === 'Sakit' || a.status === 'Izin')).length}</p></div>
-      <div class="bg-white p-4 rounded-2xl border border-slate-200"><p class="text-xs text-slate-500 font-semibold">Guru & Tendik</p><p class="text-2xl font-extrabold text-indigo-700 mt-1">${todayAbs.filter(a => a.tipe === 'Guru/Tendik').length}</p></div>
-    </div>
-
-    <div class="bg-white rounded-2xl border border-slate-200 overflow-hidden">
-      <div class="p-4 border-b border-slate-100 flex justify-between"><h3 class="font-bold text-sm">Aktivitas Hari Ini</h3><button onclick="activeTab='laporan'; render();" class="text-xs font-bold text-emerald-700">Semua →</button></div>
-      <div class="divide-y divide-slate-100">
-        ${todayAbs.map(a => `<div class="p-3.5 flex justify-between text-xs"><div><p class="font-bold text-sm text-slate-800">${a.nama}</p><p class="text-slate-500">${a.tipe} • ${a.kelasUnit} • ${a.kode}</p></div><div class="text-right"><span class="px-2.5 py-0.5 rounded-full font-bold bg-emerald-100 text-emerald-800">${a.status}</span><p class="text-slate-500 mt-0.5">Masuk: ${a.jamMasuk || '-'} | Pulang: ${a.jamPulang || '-'}</p></div></div>`).join('')}
-      </div>
-    </div>
-  </div>`;
-}
-
-function renderScanKios() {
-  return `
-  <div class="space-y-4">
-    <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm">
-      <div class="flex flex-wrap items-center justify-between gap-2 mb-4">
-        <div>
-          <h2 class="text-lg font-extrabold text-slate-800">Pemindai Barcode / QR Nyata (NISN & PegID)</h2>
-          <p class="text-xs text-slate-500">Mendukung kamera belakang HP (Code 128, Code 39, EAN-13, QR), foto barcode, dan scanner USB.</p>
-        </div>
-        <div class="flex bg-slate-100 p-1 rounded-xl">
-          <button onclick="scanMode='masuk'; render();" class="px-4 py-1.5 rounded-lg text-xs font-extrabold ${scanMode === 'masuk' ? 'bg-emerald-700 text-white shadow' : 'text-slate-600'}">ABSEN MASUK</button>
-          <button onclick="scanMode='pulang'; render();" class="px-4 py-1.5 rounded-lg text-xs font-extrabold ${scanMode === 'pulang' ? 'bg-indigo-700 text-white shadow' : 'text-slate-600'}">ABSEN PULANG</button>
-        </div>
-      </div>
-
-      ${scanFeedback ? `
-        <div class="mb-4 p-4 rounded-2xl border ${scanFeedback.ok ? 'bg-emerald-50 border-emerald-300 text-emerald-900' : 'bg-rose-50 border-rose-300 text-rose-900'}">
-          <div class="flex flex-wrap items-center justify-between gap-2">
-            <div>
-              <p class="font-extrabold text-sm">${scanFeedback.ok ? '✅' : '⚠️'} ${scanFeedback.title}</p>
-              <p class="text-xs mt-0.5">${scanFeedback.msg}</p>
-            </div>
-            ${scanFeedback.waPhone ? `<button onclick="openDirectWhatsApp('${scanFeedback.waPhone}', decodeURIComponent('${encodeURIComponent(scanFeedback.waText)}'))" class="px-3 py-1.5 bg-emerald-700 text-white text-xs font-bold rounded-xl">📲 Kirim WA</button>` : ''}
-          </div>
-        </div>
-      ` : ''}
-
-      <div id="qr-reader" class="w-full max-w-md mx-auto rounded-2xl overflow-hidden bg-slate-900 min-h-[220px] flex items-center justify-center text-white text-xs mb-4">
-        ${isScanningCamera ? '' : '<span class="p-4 text-center text-slate-300">Kamera belum aktif. Tekan <b>Mulai Scan Kamera</b> di bawah untuk memindai barcode kartu NISN / PegID.</span>'}
-      </div>
-      <div id="qr-file-temp" class="hidden"></div>
-
-      <div class="flex flex-wrap gap-2 mb-4">
-        ${!isScanningCamera
-          ? `<button onclick="startRealBarcodeScanner()" class="flex-1 py-2.5 bg-emerald-700 hover:bg-emerald-800 text-white text-xs font-extrabold rounded-xl shadow">📷 Mulai Scan Kamera</button>`
-          : `<button onclick="stopRealBarcodeScanner()" class="flex-1 py-2.5 bg-rose-600 hover:bg-rose-700 text-white text-xs font-extrabold rounded-xl shadow">⏹ Hentikan Kamera</button>`
-        }
-        <label class="px-4 py-2.5 bg-slate-800 hover:bg-slate-900 text-white text-xs font-bold rounded-xl cursor-pointer flex items-center">
-          🖼️ Scan dari Foto
-          <input type="file" accept="image/*" capture="environment" onchange="scanBarcodeFromFile(event)" class="hidden" />
-        </label>
-      </div>
-
-      <form onsubmit="event.preventDefault(); processScan(document.getElementById('scan-input').value); document.getElementById('scan-input').value='';" class="flex gap-2">
-        <input id="scan-input" type="text" autofocus placeholder="Hasil USB Scanner / Ketik NISN atau PegID lalu Enter..." class="flex-1 px-4 py-3.5 rounded-xl border-2 border-emerald-500 text-sm font-bold" />
-        <button type="submit" class="px-5 py-3.5 bg-emerald-700 text-white font-extrabold text-sm rounded-xl shadow">Proses</button>
-      </form>
-
-      <div class="mt-4 pt-4 border-t border-slate-100 flex flex-wrap items-center justify-between gap-2">
-        <div class="flex flex-wrap gap-1.5">
-          ${db.siswa.map(s => `<button onclick="processScan('${s.nisn}')" class="px-2.5 py-1.5 bg-emerald-50 text-emerald-800 rounded-lg text-xs font-semibold border border-emerald-200">🎓 ${s.nama.split(' ')[0]} (${s.nisn})</button>`).join('')}
-        </div>
-        <button onclick="activeTab='master'; stopRealBarcodeScanner(); render();" class="text-xs font-bold text-emerald-700 underline">Lihat & Cetak Kartu Barcode →</button>
-      </div>
-    </div>
-  </div>`;
-}
-
-function renderMasterKartu() {
-  setTimeout(() => {
-    if (typeof JsBarcode === 'undefined') return;
-    document.querySelectorAll('.barcode-svg').forEach(el => {
-      try { JsBarcode(el, el.dataset.code, { format: 'CODE128', width: 1.6, height: 42, displayValue: true, fontSize: 12, margin: 2 }); } catch (e) {}
-    });
-  }, 50);
-
-  return `
-  <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm space-y-4">
-    <div class="flex items-center justify-between">
-      <div>
-        <h2 class="text-lg font-extrabold text-slate-800">Data Master & Kartu Barcode NISN / PegID</h2>
-        <p class="text-xs text-slate-500">Tambah data siswa/pegawai dan cetak kartu barcode siap scan.</p>
-      </div>
-      <button onclick="window.print()" class="no-print px-4 py-2 bg-emerald-700 text-white text-xs font-bold rounded-xl">🖨️ Cetak Kartu</button>
-    </div>
-
-    <form onsubmit="event.preventDefault();
-      db.siswa.push({
-        nisn: document.getElementById('new-nisn').value.trim(),
-        nama: document.getElementById('new-nama').value.trim(),
-        kelas: document.getElementById('new-kelas').value,
-        wali: document.getElementById('new-wali').value.trim(),
-        waWali: normalizeWA(document.getElementById('new-wa').value)
-      });
-      saveState(); render();" class="no-print grid grid-cols-1 md:grid-cols-5 gap-2 p-3.5 bg-slate-50 rounded-2xl border border-slate-200">
-      <input id="new-nisn" required placeholder="NISN Siswa" class="px-3 py-2 rounded-xl border border-slate-200 text-xs" />
-      <input id="new-nama" required placeholder="Nama Lengkap Siswa" class="px-3 py-2 rounded-xl border border-slate-200 text-xs" />
-      <select id="new-kelas" class="px-3 py-2 rounded-xl border border-slate-200 text-xs">
-        ${db.kelasList.map(k => `<option value="${k.nama}">${k.nama}</option>`).join('')}
-      </select>
-      <input id="new-wali" required placeholder="Nama Wali Murid" class="px-3 py-2 rounded-xl border border-slate-200 text-xs" />
-      <div class="flex gap-1.5">
-        <input id="new-wa" required placeholder="No WA Wali (08xx)" class="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs" />
-        <button type="submit" class="px-3.5 py-2 bg-emerald-700 text-white font-bold text-xs rounded-xl shrink-0">+ Tambah</button>
-      </div>
-    </form>
-
-    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-      ${db.siswa.map(s => `
-        <div class="border-2 border-emerald-700 rounded-2xl p-4 bg-white">
-          <div class="flex justify-between border-b border-emerald-100 pb-2 mb-2">
-            <p class="text-xs font-extrabold text-emerald-800">${db.school.name}</p>
-            <span class="px-2 py-0.5 bg-emerald-700 text-white text-[10px] font-bold rounded">${s.kelas}</span>
-          </div>
-          <p class="text-sm font-extrabold">${s.nama}</p>
-          <p class="text-[11px] text-slate-500">Wali: ${s.wali} (${s.waWali})</p>
-          <div class="mt-2 flex justify-center bg-slate-50 rounded-xl p-2"><svg class="barcode-svg" data-code="${s.nisn}"></svg></div>
-        </div>
-      `).join('')}
-      ${db.pegawai.map(p => `
-        <div class="border-2 border-indigo-700 rounded-2xl p-4 bg-white">
-          <div class="flex justify-between border-b border-indigo-100 pb-2 mb-2">
-            <p class="text-xs font-extrabold text-indigo-800">${db.school.name}</p>
-            <span class="px-2 py-0.5 bg-indigo-700 text-white text-[10px] font-bold rounded">${p.unit}</span>
-          </div>
-          <p class="text-sm font-extrabold">${p.nama}</p>
-          <p class="text-[11px] text-slate-500">${p.jabatan}</p>
-          <div class="mt-2 flex justify-center bg-slate-50 rounded-xl p-2"><svg class="barcode-svg" data-code="${p.pegId}"></svg></div>
-        </div>
-      `).join('')}
-    </div>
-  </div>`;
-}
-
-function renderWhatsAppGateway() {
-  const cfg = db.waConfig;
-  const hasRealToken = Boolean(cfg.apiKey && cfg.apiKey.trim());
-  return `
-  <div class="space-y-5">
-    <div class="grid grid-cols-1 lg:grid-cols-2 gap-5">
-      <div class="bg-white p-5 rounded-2xl border border-slate-200 space-y-3">
-        <div class="flex items-center justify-between">
-          <h2 class="text-base font-extrabold">Konfigurasi WhatsApp Gateway</h2>
-          <span class="px-2.5 py-1 rounded-full text-[11px] font-bold ${cfg.sendMode === 'direct_wa' || hasRealToken ? 'bg-emerald-100 text-emerald-800' : 'bg-amber-100 text-amber-800'}">${cfg.sendMode === 'direct_wa' ? 'Mode App WA' : (hasRealToken ? 'Token Aktif' : 'Perlu Token / Mode WA')}</span>
-        </div>
-        <select id="wa-send-mode" class="w-full px-3 py-2.5 rounded-xl border border-slate-200 text-xs font-bold">
-          <option value="api_and_fallback" ${cfg.sendMode === 'api_and_fallback' ? 'selected' : ''}>API Gateway + Otomatis Buka App WA</option>
-          <option value="api_only" ${cfg.sendMode === 'api_only' ? 'selected' : ''}>Hanya API Gateway (Fonnte / Wablas)</option>
-          <option value="direct_wa" ${cfg.sendMode === 'direct_wa' ? 'selected' : ''}>Buka Langsung Aplikasi WhatsApp (Gratis Tanpa Token)</option>
-        </select>
-        <input id="wa-endpoint" value="${cfg.endpoint}" class="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs font-mono" />
-        <input id="wa-token" value="${cfg.apiKey}" placeholder="Tempel API Token asli..." class="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs font-mono" />
-        <button onclick="db.waConfig.sendMode=document.getElementById('wa-send-mode').value; db.waConfig.endpoint=document.getElementById('wa-endpoint').value; db.waConfig.apiKey=document.getElementById('wa-token').value.trim(); saveState(); alert('Tersimpan!'); render();" class="w-full py-2.5 bg-emerald-700 text-white text-xs font-extrabold rounded-xl">Simpan Konfigurasi</button>
-      </div>
-      <div class="bg-white p-5 rounded-2xl border border-slate-200 space-y-3">
-        <h2 class="text-base font-extrabold">Uji Coba Kirim Pesan WA Nyata</h2>
-        <input id="test-wa-phone" value="${waTestState.phone}" class="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs font-mono font-bold" />
-        <textarea id="test-wa-msg" rows="3" class="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs">${waTestState.message}</textarea>
-        <div class="flex gap-2">
-          <button onclick="runWaTest()" class="flex-1 py-2.5 bg-slate-900 text-white text-xs font-extrabold rounded-xl">${waTestState.loading ? 'Mengirim...' : '🚀 Kirim Pesan Tes'}</button>
-          <button onclick="openDirectWhatsApp(document.getElementById('test-wa-phone').value, document.getElementById('test-wa-msg').value)" class="px-4 py-2.5 bg-emerald-100 text-emerald-900 text-xs font-extrabold rounded-xl">📲 App WA</button>
-        </div>
-        ${waTestState.lastResponse ? `<div class="p-3 rounded-xl bg-slate-100 text-xs font-medium">${waTestState.lastResponse}</div>` : ''}
-      </div>
-    </div>
-    <div class="bg-white p-5 rounded-2xl border border-slate-200">
-      <h3 class="font-extrabold text-sm mb-2">Log Pengiriman WA</h3>
-      <div class="divide-y divide-slate-100">
-        ${db.waLogs.map(l => `<div class="py-2.5 flex justify-between items-center text-xs gap-2"><div><p class="font-bold">${l.penerima} (${l.tujuan})</p><p class="text-slate-600">${l.pesan}</p><p class="text-[10px] text-amber-700">${l.detail || ''}</p></div><span class="px-2.5 py-1 rounded-full font-bold bg-slate-100 shrink-0">${l.status}</span></div>`).join('')}
-      </div>
-    </div>
-  </div>`;
-}
-
-function renderWaliKelas() {
-  return `
-  <div class="space-y-4">
-    <div class="bg-white p-5 rounded-2xl border border-slate-200 space-y-3">
-      <h2 class="text-lg font-extrabold">Verifikasi Izin Wali Kelas</h2>
-      ${db.izinRequests.map(r => `
-        <div class="p-4 rounded-2xl border border-slate-200 bg-slate-50 space-y-2">
-          <div class="flex justify-between">
-            <div><p class="font-extrabold text-sm">${r.namaSiswa} (${r.kelas}) • ${r.jenis}</p><p class="text-xs text-slate-500">${r.tanggal} • Wali: ${r.wali}</p></div>
-            <span class="px-2.5 py-1 rounded-full text-xs font-bold bg-amber-100 text-amber-800">${r.status}</span>
-          </div>
-          <p class="text-xs bg-white p-2.5 rounded-xl border">"${r.alasan}"</p>
-          <div class="flex justify-between items-center text-xs">
-            <span>📎 ${r.fileName} (${r.fileSizeKB} KB) ${r.fileData ? `<a href="${r.fileData}" download="${r.fileName}" class="ml-2 text-emerald-700 font-bold underline">Unduh</a>` : ''}</span>
-            ${r.status === 'Menunggu' ? `<div class="flex gap-2"><button onclick="handleVerifikasiIzin('${r.id}', true)" class="px-3 py-1.5 bg-emerald-700 text-white font-bold rounded-xl">Setujui & WA</button><button onclick="handleVerifikasiIzin('${r.id}', false)" class="px-3 py-1.5 bg-rose-600 text-white font-bold rounded-xl">Tolak</button></div>` : ''}
-          </div>
-        </div>
-      `).join('')}
-    </div>
-  </div>`;
-}
-
-function renderPortalWaliMurid() {
-  const s = db.siswa[0];
-  const kls = db.kelasList.find(k => k.nama === s.kelas);
-  return `
-  <div class="bg-white p-5 rounded-2xl border border-slate-200 space-y-4">
-    <h2 class="text-lg font-extrabold">Portal Wali Murid & Upload Surat Izin (Maks. 1 MB)</h2>
-    ${kls ? `<div class="p-3.5 rounded-2xl bg-emerald-50 border border-emerald-200 flex justify-between items-center"><div><p class="text-xs font-bold text-emerald-800">Wali Kelas ${kls.nama}</p><p class="text-sm font-extrabold">${kls.waliKelasNama}</p></div><button onclick="openDirectWhatsApp('${kls.waWaliKelas}', 'Assalamualaikum ${kls.waliKelasNama}')" class="px-3 py-2 bg-emerald-700 text-white text-xs font-bold rounded-xl">💬 WA Wali Kelas</button></div>` : ''}
-    <form onsubmit="submitIzinWaliMurid(event)" class="space-y-3">
-      <select id="wm-nisn" class="w-full px-3 py-2.5 rounded-xl border text-xs font-bold">${db.siswa.map(x => `<option value="${x.nisn}">${x.nama} (${x.kelas})</option>`).join('')}</select>
-      <div class="grid grid-cols-2 gap-2">
-        <input id="wm-tanggal" type="date" value="${getTodayStr()}" required class="px-3 py-2 rounded-xl border text-xs" />
-        <select id="wm-jenis" class="px-3 py-2 rounded-xl border text-xs font-bold"><option value="Sakit">Sakit</option><option value="Izin">Izin</option></select>
-      </div>
-      <textarea id="wm-alasan" rows="2" required placeholder="Alasan izin / sakit..." class="w-full px-3 py-2 rounded-xl border text-xs"></textarea>
-      <input id="wm-file" type="file" accept=".jpg,.jpeg,.png,.pdf" class="w-full text-xs border rounded-xl p-2" />
-      <button type="submit" class="w-full py-3 bg-emerald-700 text-white font-extrabold text-xs rounded-xl">Kirim Izin & Notifikasi WA ke Wali Kelas</button>
-    </form>
-  </div>`;
-}
-
-function renderLaporan() {
-  const filtered = db.absensi.filter(a => !filterTanggal || a.tanggal === filterTanggal);
-  return `
-  <div class="bg-white p-5 rounded-2xl border border-slate-200 space-y-3">
-    <div class="flex justify-between items-center">
-      <h2 class="text-lg font-extrabold">Laporan Absensi</h2>
-      <div class="flex gap-2">
-        <button onclick="exportCSV()" class="px-3 py-2 bg-emerald-700 text-white text-xs font-bold rounded-xl">📥 CSV</button>
-        <button onclick="window.print()" class="px-3 py-2 bg-slate-800 text-white text-xs font-bold rounded-xl">🖨️ Cetak</button>
-      </div>
-    </div>
-    <input type="date" value="${filterTanggal}" onchange="filterTanggal=this.value; render();" class="px-3 py-2 rounded-xl border text-xs" />
-    <div class="overflow-x-auto">
-      <table class="w-full text-left text-xs">
-        <thead><tr class="bg-slate-100"><th class="p-2.5">Tanggal</th><th class="p-2.5">Kode</th><th class="p-2.5">Nama</th><th class="p-2.5">Kelas/Unit</th><th class="p-2.5">Masuk</th><th class="p-2.5">Pulang</th><th class="p-2.5">Status</th></tr></thead>
-        <tbody class="divide-y">${filtered.map(a => `<tr><td class="p-2.5">${a.tanggal}</td><td class="p-2.5 font-mono">${a.kode}</td><td class="p-2.5 font-bold">${a.nama}</td><td class="p-2.5">${a.kelasUnit}</td><td class="p-2.5">${a.jamMasuk}</td><td class="p-2.5">${a.jamPulang||'-'}</td><td class="p-2.5 font-bold">${a.status}</td></tr>`).join('')}</tbody>
-      </table>
-    </div>
-  </div>`;
-}
-
-function renderKeamananPublikasi() {
-  return `
-  <div class="bg-white p-5 rounded-2xl border border-slate-200 space-y-3">
-    <h2 class="text-lg font-extrabold">Identitas Madrasah & Backup Database</h2>
-    <input id="sch-name" value="${db.school.name}" class="w-full px-3 py-2 rounded-xl border text-xs font-bold" />
-    <input id="sch-pin" value="${db.school.kioskPin}" class="w-full px-3 py-2 rounded-xl border text-xs font-mono" />
-    <div class="flex flex-wrap gap-2">
-      <button onclick="db.school.name=document.getElementById('sch-name').value; db.school.kioskPin=document.getElementById('sch-pin').value; saveState(); alert('Tersimpan!'); render();" class="px-4 py-2 bg-emerald-700 text-white text-xs font-bold rounded-xl">Simpan</button>
-      <button onclick="backupJSON()" class="px-4 py-2 bg-slate-800 text-white text-xs font-bold rounded-xl">💾 Backup JSON</button>
-      <label class="px-4 py-2 bg-slate-100 text-xs font-bold rounded-xl cursor-pointer">📂 Restore JSON<input type="file" accept=".json" onchange="restoreJSON(event)" class="hidden" /></label>
-    </div>
-  </div>`;
-}
-
 function render() {
-  const root = document.getElementById('app');
-  if (!root) return;
-  window.__appRendered = true;
-  if (!currentUser) { root.innerHTML = renderLogin(); return; }
-
-  const navItems = [
-    { id: 'dashboard', label: 'Beranda', icon: '🏠', roles: ['admin', 'piket', 'walikelas', 'guru'] },
-    { id: 'scan', label: 'Scan Kios', icon: '📷', roles: ['admin', 'piket', 'guru'] },
-    { id: 'walikelas', label: 'Wali Kelas', icon: '📋', roles: ['admin', 'walikelas'] },
-    { id: 'portal_wali', label: 'Wali Murid', icon: '👪', roles: ['admin', 'walimurid', 'walikelas'] },
-    { id: 'master', label: 'Kartu Barcode', icon: '🪪', roles: ['admin'] },
-    { id: 'wa', label: 'WA & Log', icon: '💬', roles: ['admin'] },
-    { id: 'laporan', label: 'Laporan', icon: '📊', roles: ['admin', 'piket', 'walikelas', 'guru'] },
-    { id: 'keamanan', label: 'Publikasi', icon: '🛡️', roles: ['admin'] }
-  ].filter(i => i.roles.includes(currentUser.role));
-
-  let content = '';
-  if (kioskLocked) content = renderScanKios();
-  else if (activeTab === 'dashboard') content = renderDashboard();
-  else if (activeTab === 'scan') content = renderScanKios();
-  else if (activeTab === 'walikelas') content = renderWaliKelas();
-  else if (activeTab === 'portal_wali') content = renderPortalWaliMurid();
-  else if (activeTab === 'master') content = renderMasterKartu();
-  else if (activeTab === 'wa') content = renderWhatsAppGateway();
-  else if (activeTab === 'laporan') content = renderLaporan();
-  else if (activeTab === 'keamanan') content = renderKeamananPublikasi();
-
-  root.innerHTML = `
-  <div class="min-h-screen flex flex-col pb-20 md:pb-6">
-    <header class="no-print sticky top-0 z-30 bg-white/95 backdrop-blur border-b border-slate-200 px-4 py-3">
-      <div class="max-w-5xl mx-auto flex items-center justify-between gap-2">
-        <div class="flex items-center gap-2.5">
-          <div class="w-9 h-9 rounded-xl bg-emerald-800 text-white font-extrabold text-xs flex items-center justify-center shadow">${db.school.shortCode}</div>
-          <div>
-            <h1 class="text-sm font-extrabold text-slate-900">${db.school.name}</h1>
-            <p class="text-[11px] text-slate-500">${isOnline ? '🟢 Online' : '🟠 Offline'} • ${currentUser.role.toUpperCase()}</p>
-          </div>
-        </div>
-        <div class="flex items-center gap-1.5">
-          <button onclick="installPWA()" class="px-3 py-1.5 bg-emerald-50 text-emerald-800 border border-emerald-200 rounded-xl text-xs font-extrabold">📲 Instal</button>
-          <button onclick="toggleKioskLock()" class="px-3 py-1.5 ${kioskLocked ? 'bg-rose-600 text-white' : 'bg-slate-100 text-slate-700'} rounded-xl text-xs font-bold">${kioskLocked ? '🔒 Terkunci' : '🔓 Kios'}</button>
-          ${!kioskLocked ? `<button onclick="logout()" class="px-3 py-1.5 bg-rose-50 text-rose-700 rounded-xl text-xs font-bold">Keluar</button>` : ''}
-        </div>
-      </div>
-      ${!kioskLocked ? `<nav class="hidden md:flex max-w-5xl mx-auto gap-1.5 mt-3 pt-2.5 border-t border-slate-100 overflow-x-auto">${navItems.map(n => `<button onclick="if(activeTab==='scan' && n.id!=='scan') stopRealBarcodeScanner(); activeTab='${n.id}'; render();" class="px-3.5 py-2 rounded-xl text-xs font-bold ${activeTab === n.id ? 'bg-emerald-800 text-white shadow' : 'text-slate-600 hover:bg-slate-100'}">${n.icon} ${n.label}</button>`).join('')}</nav>` : ''}
-    </header>
-    <main class="flex-1 max-w-5xl w-full mx-auto p-4">${content}</main>
-    ${!kioskLocked ? `<nav class="no-print md:hidden fixed bottom-0 inset-x-0 z-30 bg-white border-t border-slate-200 flex justify-around py-1.5 px-1 shadow-lg">${navItems.slice(0, 6).map(n => `<button onclick="if(activeTab==='scan' && n.id!=='scan') stopRealBarcodeScanner(); activeTab='${n.id}'; render();" class="flex flex-col items-center py-1 px-1.5 rounded-xl ${activeTab === n.id ? 'text-emerald-800 font-extrabold' : 'text-slate-400'}"><span class="text-base">${n.icon}</span><span class="text-[10px] mt-0.5">${n.label}</span></button>`).join('')}</nav>` : ''}
-  </div>`;
+  const app = document.getElementById('app');
+  if (!currentUser) {
+    app.innerHTML = `<div class="min-h-screen bg-emerald-900 flex items-center justify-center p-4"><div class="bg-white max-w-md w-full rounded-3xl p-6 shadow-xl space-y-4"><h1 class="text-xl font-extrabold text-emerald-900 text-center">${db.school.name}</h1><input id="lid" placeholder="ID (admin / piket)" class="w-full px-4 py-3 border rounded-xl text-sm"/><input id="lpin" type="password" placeholder="PIN (1234)" class="w-full px-4 py-3 border rounded-xl text-sm"/><button onclick="loginAs(document.getElementById('lid').value, document.getElementById('lpin').value)" class="w-full py-3 bg-emerald-700 text-white font-bold rounded-xl">Masuk</button><div class="grid grid-cols-2 gap-2 text-xs"><button onclick="loginAs('admin','1234')" class="p-2.5 bg-slate-100 rounded-xl font-bold">🛡️ Admin</button><button onclick="loginAs('piket','1234')" class="p-2.5 bg-slate-100 rounded-xl font-bold">📷 Piket</button></div></div></div>`;
+    return;
+  }
+  app.innerHTML = `<div class="min-h-screen flex flex-col"><header class="bg-white border-b px-4 py-3 flex justify-between items-center"><div class="font-extrabold text-emerald-900">${db.school.name}</div><div class="flex gap-2"><button onclick="toggleKioskLock()" class="px-3 py-1.5 bg-slate-100 rounded-xl text-xs font-bold">${kioskLocked ? '🔒 Terkunci' : '🔓 Kios'}</button>${!kioskLocked ? `<button onclick="logout()" class="px-3 py-1.5 bg-rose-50 text-rose-700 rounded-xl text-xs font-bold">Keluar</button>` : ''}</div></header><main class="max-w-4xl w-full mx-auto p-4 space-y-4"><div class="flex gap-2">${!kioskLocked ? `<button onclick="activeTab='dashboard';render();" class="px-4 py-2 rounded-xl text-xs font-bold ${activeTab==='dashboard'?'bg-emerald-700 text-white':'bg-white border'}">Beranda</button>` : ''}<button onclick="activeTab='scan';render();" class="px-4 py-2 rounded-xl text-xs font-bold ${activeTab==='scan'?'bg-emerald-700 text-white':'bg-white border'}">Scan Kios</button></div>${(kioskLocked || activeTab==='scan') ? `<div class="bg-white p-5 rounded-2xl border space-y-3"><h2 class="font-extrabold">Scan NISN / PegID</h2><div class="flex gap-2"><button onclick="scanMode='masuk';render();" class="px-3 py-1.5 rounded-lg text-xs font-bold ${scanMode==='masuk'?'bg-emerald-700 text-white':'bg-slate-100'}">MASUK</button><button onclick="scanMode='pulang';render();" class="px-3 py-1.5 rounded-lg text-xs font-bold ${scanMode==='pulang'?'bg-indigo-700 text-white':'bg-slate-100'}">PULANG</button></div>${scanFeedback ? `<div class="p-3 rounded-xl ${scanFeedback.ok?'bg-emerald-50 text-emerald-900':'bg-rose-50 text-rose-900'} text-xs font-bold">${scanFeedback.title}: ${scanFeedback.msg}</div>` : ''}<form onsubmit="event.preventDefault();processScan(document.getElementById('scode').value);document.getElementById('scode').value='';" class="flex gap-2"><input id="scode" placeholder="Ketik/scan NISN (misal 0074519821)" class="flex-1 px-4 py-2.5 border rounded-xl text-sm"/><button class="px-4 py-2.5 bg-emerald-700 text-white font-bold rounded-xl text-xs">Proses</button></form></div>` : `<div class="bg-white p-5 rounded-2xl border space-y-2"><h2 class="font-extrabold">Rekap Hari Ini (${getTodayStr()})</h2>${db.absensi.map(a=>`<div class="p-2.5 border-b text-xs flex justify-between"><span><b>${a.nama}</b> (${a.kode})</span><span>Masuk: ${a.jamMasuk||'-'} | Pulang: ${a.jamPulang||'-'}</span></div>`).join('') || '<p class="text-xs text-slate-500">Belum ada absensi.</p>'}</div>`}</main></div>`;
 }
-
 render();
 </script>
 </body>
